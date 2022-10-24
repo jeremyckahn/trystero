@@ -1,4 +1,6 @@
-import Peer from 'simple-peer-light'
+const Peer = (typeof window  === 'undefined')
+  ? import('simple-peer')
+  : import('simple-peer-light')
 
 const charSet = '0123456789AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz'
 
