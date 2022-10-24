@@ -1,6 +1,8 @@
-const Peer = (typeof window  === 'undefined')
-  ? import('simple-peer')
-  : import('simple-peer-light')
+const isBrowser = typeof window !== 'undefined'
+
+const Peer = isBrowser
+  ? await import('simple-peer-light')
+  : (await import('simple-peer')).default
 
 const charSet = '0123456789AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz'
 
