@@ -51,25 +51,29 @@ test('reconnection bug', async ({ page, browser, browserName }) => {
   const listenForLeave = () => new Promise(res => window.room.onPeerLeave(res));
   const leaveRoom = () => window.room.leave();
 
-  const [peer1Left] = await Promise.all([
-    page2.evaluate(listenForLeave),
-    page.evaluate(leaveRoom)
-  ]);
-  expect(peer1Left).toBe(peer1Id);
+  for (let i = 0; i < 10; i++) {
+    console.log(`reconnection test loop: ${i + 1}/10`);
 
-  const rejoinRoom = ([config, roomNs]) => {
-    const room = window.trystero.joinRoom(config, roomNs);
-    window.room = room;
-    return new Promise(res => room.onPeerJoin(res));
-  };
+    const [peer1Left] = await Promise.all([
+      page2.evaluate(listenForLeave),
+      page.evaluate(leaveRoom)
+    ]);
+    expect(peer1Left).toBe(peer1Id);
 
-  const listenForJoin = () => new Promise(res => window.room.onPeerJoin(res));
+    const rejoinRoom = ([config, roomNs]) => {
+      const room = window.trystero.joinRoom(config, roomNs);
+      window.room = room;
+      return new Promise(res => room.onPeerJoin(res));
+    };
 
-  const [rejoinedPeerIdOnPage2] = await Promise.all([
-    page2.evaluate(listenForJoin),
-    page.evaluate(rejoinRoom, [roomConfig, roomNs])
-  ]);
+    const listenForJoin = () => new Promise(res => window.room.onPeerJoin(res));
 
-  const newPeer1Id = await page.evaluate(getSelfId);
-  expect(rejoinedPeerIdOnPage2).toBe(newPeer1Id);
+    const [rejoinedPeerIdOnPage2] = await Promise.all([
+      page2.evaluate(listenForJoin),
+      page.evaluate(rejoinRoom, [roomConfig, roomNs])
+    ]);
+
+    const newPeer1Id = await page.evaluate(getSelfId);
+    expect(rejoinedPeerIdOnPage2).toBe(newPeer1Id);
+  }
 });
