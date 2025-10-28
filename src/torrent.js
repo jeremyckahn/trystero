@@ -42,12 +42,13 @@ const getInfoHash = async topic => {
   return hash
 }
 
-const send = async (client, topic, payload) =>
+const send = async (client, topic, payload, event) =>
   client.send(
     toJson({
       action: trackerAction,
       info_hash: await getInfoHash(topic),
       peer_id: selfId,
+      ...(event ? {event} : {}),
       ...payload
     })
   )
@@ -166,6 +167,7 @@ export const joinRoom = strategy({
       clearInterval(announceIntervals[url][rootTopic])
       delete msgHandlers[url][rootTopic]
       delete announceFns[url][rootTopic]
+      send(client, rootTopic, {}, 'stopped')
     }
   },
 
